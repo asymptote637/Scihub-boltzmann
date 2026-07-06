@@ -79,6 +79,18 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_desktop.ps1
 
 这个入口会直接打开桌面窗口，不使用 `localhost:8501` 或任何网页端口。
 
+更方便的方式是直接双击根目录下的：
+
+```text
+start_lbm_desktop.bat
+```
+
+也可以创建桌面快捷方式：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\create_desktop_shortcut.ps1
+```
+
 可选旧版网页 UI：
 
 ```powershell
