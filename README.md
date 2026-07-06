@@ -85,6 +85,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_desktop.ps1
 start_lbm_desktop.bat
 ```
 
+如果双击时提示缺少 `matplotlib`、`PySide6` 等依赖，先双击：
+
+```text
+install_lbm_dependencies.bat
+```
+
 也可以创建桌面快捷方式：
 
 ```powershell

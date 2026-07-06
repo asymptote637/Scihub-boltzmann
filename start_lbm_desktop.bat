@@ -1,31 +1,45 @@
 @echo off
-setlocal
+setlocal EnableExtensions EnableDelayedExpansion
 
 cd /d "%~dp0"
 
 set "PYTHON_EXE="
 
 if not "%LBM_PYTHON%"=="" (
-    set "PYTHON_EXE=%LBM_PYTHON%"
+    call :check_python "%LBM_PYTHON%"
 )
 
 if "%PYTHON_EXE%"=="" (
     set "BUNDLED_PYTHON=%USERPROFILE%\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
-    if exist "%BUNDLED_PYTHON%" (
-        set "PYTHON_EXE=%BUNDLED_PYTHON%"
+    if exist "!BUNDLED_PYTHON!" (
+        call :check_python "!BUNDLED_PYTHON!"
     )
 )
 
 if "%PYTHON_EXE%"=="" (
     where python >nul 2>nul
     if not errorlevel 1 (
-        set "PYTHON_EXE=python"
+        call :check_python "python"
     )
 )
 
 if "%PYTHON_EXE%"=="" (
-    echo Python was not found.
-    echo Install Python 3.11+ or set LBM_PYTHON to python.exe.
+    echo No usable Python environment was found.
+    echo.
+    echo The desktop simulator needs:
+    echo   numpy
+    echo   matplotlib
+    echo   pandas
+    echo   PySide6
+    echo   Pillow
+    echo.
+    echo If Python is installed, run:
+    echo   python -m pip install -r requirements.txt
+    echo.
+    echo Or double-click:
+    echo   install_lbm_dependencies.bat
+    echo.
+    echo Or set LBM_PYTHON to a python.exe that already has these packages.
     pause
     exit /b 1
 )
@@ -39,3 +53,12 @@ if errorlevel 1 (
     pause
 )
 
+exit /b %errorlevel%
+
+:check_python
+if "%~1"=="" exit /b 0
+"%~1" -c "import numpy, matplotlib, pandas, PySide6, PIL" >nul 2>nul
+if not errorlevel 1 (
+    set "PYTHON_EXE=%~1"
+)
+exit /b 0
