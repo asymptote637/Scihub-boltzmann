@@ -1,0 +1,23 @@
+[simulation]
+name = "default_lid_driven_cavity"
+kind = "lid_driven_cavity"
+seed = 20260706
+
+[domain]
+nx = 64
+ny = 64
+
+[physics]
+reynolds = 100.0
+u_lid = 0.05
+
+[time]
+steps = 1000
+report_interval = 100
+snapshot_interval = 0
+
+[output]
+database = "database/lbm_runs.sqlite"
+results_dir = "results"
+save_final_fields = true
+

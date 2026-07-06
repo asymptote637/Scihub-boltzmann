@@ -1,0 +1,23 @@
+[simulation]
+name = "smoke_lid_driven_cavity"
+kind = "lid_driven_cavity"
+seed = 20260706
+
+[domain]
+nx = 48
+ny = 48
+
+[physics]
+reynolds = 100.0
+u_lid = 0.05
+
+[time]
+steps = 300
+report_interval = 50
+snapshot_interval = 0
+
+[output]
+database = "database/lbm_runs.sqlite"
+results_dir = "results"
+save_final_fields = true
+

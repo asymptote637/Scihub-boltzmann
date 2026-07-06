@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Local assistant/app state
+.agents/
+.codex/
+.git.invalid-*/
+
+# Secrets and machine-local config
+.env
+*.pem
+*.key
+
+# Research outputs
+results/*
+!results/.gitkeep
+logs/*
+!logs/.gitkeep
+database/*
+!database/.gitkeep
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+notebooks/.ipynb_checkpoints/
+
+# Large simulation artifacts
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.vtk
+*.vti
+*.xdmf
+*.csv
+*.sqlite
+*.sqlite3
+*.db
+*.log
+
+# Keep curated CSV files when intentionally added under docs or configs.
+!docs/**/*.csv
+!configs/**/*.csv
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
