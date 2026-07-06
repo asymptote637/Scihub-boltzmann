@@ -113,3 +113,14 @@ python -m pip install -r requirements.txt
 ## GitHub 发布策略
 
 本仓库适合公开源码、文档、配置模板、测试和启动脚本；本地仿真输出、数据库、日志、缓存、原始数据和个人环境状态应保留在本地。详细规则见 `docs/publication_policy.md`。
+
+## Project Docs
+
+- `docs/about.md`: project scope, goals, and limitations.
+- `docs/workflow.md`: simulation and publication workflow.
+- `docs/package.md`: installation, packaging, and build notes.
+- `docs/release.md`: release checklist and tag process.
+- `docs/contribute.md`: contribution guide.
+- `docs/publication_policy.md`: public vs local-only file policy.
+
+CI is defined in `.github/workflows/ci.yml`.
