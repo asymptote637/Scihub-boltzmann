@@ -5,6 +5,10 @@ cd /d "%~dp0"
 
 set "PYTHON_EXE="
 
+if exist ".venv\Scripts\python.exe" (
+    call :check_python ".venv\Scripts\python.exe"
+)
+
 if not "%LBM_PYTHON%"=="" (
     call :check_python "%LBM_PYTHON%"
 )
@@ -34,10 +38,9 @@ if "%PYTHON_EXE%"=="" (
     echo   Pillow
     echo.
     echo If Python is installed, run:
-    echo   python -m pip install -r requirements.txt
-    echo.
-    echo Or double-click:
     echo   install_lbm_dependencies.bat
+    echo.
+    echo This creates a local .venv and installs dependencies there.
     echo.
     echo Or set LBM_PYTHON to a python.exe that already has these packages.
     pause

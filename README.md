@@ -91,6 +91,8 @@ start_lbm_desktop.bat
 install_lbm_dependencies.bat
 ```
 
+该脚本会在项目内创建 `.venv` 并把依赖安装进去。之后 `start_lbm_desktop.bat` 会优先使用这个本地虚拟环境，避免系统 Python 版本或 Codex runtime 变化导致打不开。
+
 也可以创建桌面快捷方式：
 
 ```powershell
