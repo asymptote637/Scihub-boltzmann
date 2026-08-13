@@ -1,16 +1,33 @@
-"""Core D2Q9-LBGK solver for two-dimensional low-Mach incompressible flow."""
+"""Core D2Q9 solver for two-dimensional low-Mach incompressible flow."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from collections.abc import Iterator
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
 
-from boundary_conditions import E, OPP, apply_boundaries, equilibrium, macroscopic
+from boundary_conditions import OPP, E, W, apply_boundaries, equilibrium, macroscopic
 from config import SolverConfig, derived_parameters, validate_config
+from thermal_lbm import ThermalField
+
+MRT_MATRIX = np.array(
+    [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [-4, -1, -1, -1, -1, 2, 2, 2, 2],
+        [4, -2, -2, -2, -2, 1, 1, 1, 1],
+        [0, 1, 0, -1, 0, 1, -1, -1, 1],
+        [0, -2, 0, 2, 0, 1, -1, -1, 1],
+        [0, 0, 1, 0, -1, 1, 1, -1, -1],
+        [0, 0, -2, 0, 2, 1, 1, -1, -1],
+        [0, 1, -1, 1, -1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1, -1, 1, -1],
+    ],
+    dtype=np.float64,
+)
+MRT_MATRIX_INV = np.linalg.inv(MRT_MATRIX)
 
 
 @dataclass
@@ -25,6 +42,10 @@ class Report:
     omega: float
     mach: float
     status: str
+    temperature_residual: float | None = None
+    temperature_min: float | None = None
+    temperature_max: float | None = None
+    nusselt_average: float | None = None
 
     def as_dict(self) -> dict[str, float | int | str | None]:
         return {
@@ -38,6 +59,10 @@ class Report:
             "omega": self.omega,
             "Ma": self.mach,
             "status": self.status,
+            "temperature_residual": self.temperature_residual,
+            "temperature_min": self.temperature_min,
+            "temperature_max": self.temperature_max,
+            "nusselt_average": self.nusselt_average,
         }
 
 
@@ -74,7 +99,7 @@ def _load_mask_image(path: str | Path, nx: int, ny: int) -> np.ndarray:
 
 
 class LBMSolver:
-    """First-version solver with D2Q9, BGK collision, core boundaries, and masks."""
+    """D2Q9 solver with BGK, TRT, MRT, core boundaries, and solid masks."""
 
     def __init__(self, cfg: SolverConfig):
         errors, warnings = validate_config(cfg)
@@ -89,11 +114,16 @@ class LBMSolver:
         self.uy = np.zeros((cfg.ny, cfg.nx), dtype=np.float64)
         self._initialize_case_velocity()
         self.f = equilibrium(self.rho, self.ux, self.uy)
+        self.thermal = ThermalField(cfg, self.solid_mask) if cfg.thermal_enabled else None
         self.mass0 = float(np.sum(self.rho[~self.solid_mask]))
         self.previous_ux = self.ux.copy()
         self.previous_uy = self.uy.copy()
         self.previous_residual: float | None = None
+        self.previous_temperature = (
+            self.thermal.temperature.copy() if self.thermal is not None else None
+        )
         self.residual_history: list[Report] = []
+        self.current_ramp = 1.0
 
     @property
     def periodic_x(self) -> bool:
@@ -104,32 +134,115 @@ class LBMSolver:
         return self.cfg.bottom.type == "periodic" and self.cfg.top.type == "periodic"
 
     def _initialize_case_velocity(self) -> None:
-        if self.cfg.case_type in {"poiseuille_channel", "cylinder_flow"}:
+        if self.cfg.case_type in {
+            "poiseuille_channel",
+            "heated_channel_flow",
+            "cylinder_flow",
+            "square_cylinder_flow",
+            "backward_facing_step",
+        }:
             self.ux[:, :] = self.cfg.u_ref
         elif self.cfg.case_type == "couette_flow":
             y = np.linspace(0.0, 1.0, self.cfg.ny)[:, None]
             self.ux[:, :] = y * self.cfg.u_ref
-        elif self.cfg.case_type == "periodic_channel":
+        elif self.cfg.case_type in {"periodic_channel", "open_channel_flow"}:
             self.ux[:, :] = min(self.cfg.u_ref, 0.01)
+        elif self.cfg.case_type == "taylor_green_vortex":
+            x = 2.0 * np.pi * np.arange(self.cfg.nx) / self.cfg.nx
+            y = 2.0 * np.pi * np.arange(self.cfg.ny) / self.cfg.ny
+            phase_x, phase_y = np.meshgrid(x, y)
+            kx = 2.0 * np.pi / self.cfg.nx
+            ky = 2.0 * np.pi / self.cfg.ny
+            amplitude = self.cfg.u_ref / max(kx, ky)
+            self.ux[:, :] = amplitude * ky * np.cos(phase_x) * np.sin(phase_y)
+            self.uy[:, :] = -amplitude * kx * np.sin(phase_x) * np.cos(phase_y)
+            if self.cfg.nx == self.cfg.ny:
+                pressure_density = 0.75 * self.cfg.u_ref**2 * (
+                    np.cos(2.0 * phase_x) + np.cos(2.0 * phase_y)
+                )
+                self.rho[:, :] = self.cfg.rho0 * (1.0 - pressure_density)
+        elif self.cfg.case_type == "shear_wave_decay":
+            y = 2.0 * np.pi * np.arange(self.cfg.ny) / self.cfg.ny
+            self.ux[:, :] = self.cfg.u_ref * np.sin(y)[:, None]
         self.ux[self.solid_mask] = 0.0
         self.uy[self.solid_mask] = 0.0
 
     def collide(self) -> np.ndarray:
         feq = equilibrium(self.rho, self.ux, self.uy)
+        has_force = (
+            math.hypot(self.cfg.body_force_x, self.cfg.body_force_y) > 0.0
+            or self.cfg.thermal_enabled
+            and self.cfg.thermal_buoyancy
+        )
+        source = self._guo_force_source() if has_force else None
+        if self.cfg.collision_model == "BGK":
+            return self._collide_bgk(feq, source)
+        if self.cfg.collision_model == "TRT":
+            return self._collide_trt(feq, source)
+        if self.cfg.collision_model == "MRT":
+            return self._collide_mrt(feq, source)
+        raise ValueError(f"Unsupported collision model: {self.cfg.collision_model}")
+
+    def _collide_bgk(self, feq: np.ndarray, source: np.ndarray | None) -> np.ndarray:
         f_post = self.f - self.cfg.omega * (self.f - feq)
-        if abs(self.cfg.body_force_x) > 0.0:
-            f_post += self._guo_force_x()
+        if source is not None:
+            f_post += (1.0 - 0.5 * self.cfg.omega) * source
         return f_post
 
-    def _guo_force_x(self) -> np.ndarray:
-        force = np.zeros_like(self.f)
-        fx = self.cfg.body_force_x
+    def _collide_trt(self, feq: np.ndarray, source: np.ndarray | None) -> np.ndarray:
+        delta_even, delta_odd = self._even_odd(self.f - feq)
+        omega_plus = self.cfg.omega
+        omega_minus = self.cfg.trt_omega_minus
+        f_post = self.f - omega_plus * delta_even - omega_minus * delta_odd
+        if source is not None:
+            source_even, source_odd = self._even_odd(source)
+            f_post += (1.0 - 0.5 * omega_plus) * source_even
+            f_post += (1.0 - 0.5 * omega_minus) * source_odd
+        return f_post
+
+    def _collide_mrt(self, feq: np.ndarray, source: np.ndarray | None) -> np.ndarray:
+        moments = self.f @ MRT_MATRIX.T
+        moments_eq = feq @ MRT_MATRIX.T
+        rates = np.asarray(self.cfg.mrt_relaxation_rates)
+        moments_post = moments - rates * (moments - moments_eq)
+        if source is not None:
+            source_moments = source @ MRT_MATRIX.T
+            moments_post += (1.0 - 0.5 * rates) * source_moments
+        return moments_post @ MRT_MATRIX_INV.T
+
+    @staticmethod
+    def _even_odd(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        opposite = values[..., OPP]
+        return 0.5 * (values + opposite), 0.5 * (values - opposite)
+
+    def _guo_force_source(self) -> np.ndarray:
+        source = np.zeros_like(self.f)
+        fx, fy = self._force_components()
         for i, (ex, ey) in enumerate(E):
             eu = ex * self.ux + ey * self.uy
-            term = (ex - self.ux) / 3.0 + eu * ex
-            force[..., i] = (1.0 - 0.5 * self.cfg.omega) * 3.0 * fx * term
-        force[self.solid_mask, :] = 0.0
-        return force
+            force_projection = (ex - self.ux) * fx + (ey - self.uy) * fy
+            lattice_projection = ex * fx + ey * fy
+            source[..., i] = W[i] * (3.0 * force_projection + 9.0 * eu * lattice_projection)
+        source[self.solid_mask, :] = 0.0
+        return source
+
+    def _force_components(self) -> tuple[np.ndarray, np.ndarray]:
+        fx = np.full_like(self.rho, self.cfg.body_force_x * self.current_ramp)
+        fy = np.full_like(self.rho, self.cfg.body_force_y * self.current_ramp)
+        if self.thermal is not None and self.cfg.thermal_buoyancy:
+            gravity_norm = math.hypot(self.cfg.gravity_x, self.cfg.gravity_y)
+            temperature_offset = self.thermal.temperature - self.cfg.temperature_reference
+            buoyancy = (
+                self.rho
+                * self.cfg.buoyancy_per_temperature
+                * temperature_offset
+                * self.current_ramp
+            )
+            fx -= self.cfg.gravity_x / gravity_norm * buoyancy
+            fy -= self.cfg.gravity_y / gravity_norm * buoyancy
+        fx[self.solid_mask] = 0.0
+        fy[self.solid_mask] = 0.0
+        return fx, fy
 
     def stream(self, f_post: np.ndarray) -> np.ndarray:
         streamed = np.zeros_like(f_post)
@@ -180,14 +293,37 @@ class LBMSolver:
 
     def step(self) -> None:
         self.iteration += 1
+        ramp = self.ramp_factor()
+        self.current_ramp = ramp
         f_post = self.collide()
         self.f = self.stream(f_post)
-        ramp = min(1.0, self.iteration / max(1, self.cfg.ramp_steps))
         apply_boundaries(self.f, self.cfg, ramp)
         self.rho, self.ux, self.uy = macroscopic(self.f, self.solid_mask)
+        has_force = (
+            math.hypot(self.cfg.body_force_x, self.cfg.body_force_y) > 0.0
+            or self.cfg.thermal_enabled
+            and self.cfg.thermal_buoyancy
+        )
+        if has_force:
+            fluid = ~self.solid_mask
+            fx, fy = self._force_components()
+            self.ux[fluid] += 0.5 * fx[fluid] / self.rho[fluid]
+            self.uy[fluid] += 0.5 * fy[fluid] / self.rho[fluid]
         self.rho[self.solid_mask] = self.cfg.rho0
         self.ux[self.solid_mask] = 0.0
         self.uy[self.solid_mask] = 0.0
+        if self.thermal is not None:
+            self.thermal.step(self.ux, self.uy)
+
+    def ramp_factor(self) -> float:
+        if self.cfg.ramp_profile == "instant":
+            return 1.0
+        x = min(1.0, self.iteration / max(1, self.cfg.ramp_steps))
+        if self.cfg.ramp_profile == "smoothstep":
+            return x * x * (3.0 - 2.0 * x)
+        if self.cfg.ramp_profile == "exponential":
+            return (1.0 - math.exp(-5.0 * x)) / (1.0 - math.exp(-5.0))
+        return x
 
     def make_report(self, status: str = "running") -> Report:
         residual = self._residual()
@@ -195,6 +331,15 @@ class LBMSolver:
         mass_drift = abs(mass - self.mass0) / max(abs(self.mass0), 1e-30)
         speed = np.sqrt(self.ux**2 + self.uy**2)
         max_velocity = float(np.max(speed[~self.solid_mask])) if np.any(~self.solid_mask) else 0.0
+        temperature_residual = self._temperature_residual()
+        temperature_min = None
+        temperature_max = None
+        nusselt_average = None
+        if self.thermal is not None:
+            fluid_temperature = self.thermal.temperature[~self.solid_mask]
+            temperature_min = float(np.min(fluid_temperature))
+            temperature_max = float(np.max(fluid_temperature))
+            nusselt_average = self.thermal.average_nusselt()
         q = None if self.previous_residual in (None, 0.0) else residual / self.previous_residual
         ratios = [
             self.residual_history[k].residual / self.residual_history[k - 1].residual
@@ -205,11 +350,23 @@ class LBMSolver:
             ratios.append(q)
         q_avg = math.exp(float(np.mean(np.log(ratios)))) if ratios else None
 
-        if not np.isfinite(residual) or not np.isfinite(max_velocity):
+        thermal_is_finite = temperature_residual is None or np.isfinite(temperature_residual)
+        if (
+            not np.isfinite(residual)
+            or not np.isfinite(max_velocity)
+            or not thermal_is_finite
+            or residual > self.cfg.residual_limit
+            or max_velocity > self.cfg.max_velocity_limit
+            or mass_drift > self.cfg.mass_drift_limit
+        ):
             status = "diverged"
-        elif mass_drift > 1e-3:
+        elif mass_drift > self.cfg.mass_drift_warning:
             status = "mass drift warning"
-        elif self.iteration >= self.cfg.min_iter and residual < self.cfg.tol:
+        elif (
+            self.iteration >= self.cfg.min_iter
+            and residual < self.cfg.tol
+            and (temperature_residual is None or temperature_residual < self.cfg.thermal_tol)
+        ):
             status = "converged"
 
         report = Report(
@@ -223,10 +380,16 @@ class LBMSolver:
             omega=self.cfg.omega,
             mach=self.cfg.mach,
             status=status,
+            temperature_residual=temperature_residual,
+            temperature_min=temperature_min,
+            temperature_max=temperature_max,
+            nusselt_average=nusselt_average,
         )
         self.previous_residual = residual
         self.previous_ux = self.ux.copy()
         self.previous_uy = self.uy.copy()
+        if self.thermal is not None:
+            self.previous_temperature = self.thermal.temperature.copy()
         self.residual_history.append(report)
         return report
 
@@ -236,6 +399,15 @@ class LBMSolver:
         fluid = ~self.solid_mask
         numerator = np.sqrt(np.sum(dux[fluid] ** 2 + duy[fluid] ** 2))
         denominator = np.sqrt(np.sum(self.ux[fluid] ** 2 + self.uy[fluid] ** 2) + 1e-30)
+        return float(numerator / denominator)
+
+    def _temperature_residual(self) -> float | None:
+        if self.thermal is None or self.previous_temperature is None:
+            return None
+        fluid = ~self.solid_mask
+        difference = self.thermal.temperature - self.previous_temperature
+        numerator = np.sqrt(np.sum(difference[fluid] ** 2))
+        denominator = np.sqrt(np.sum(self.thermal.temperature[fluid] ** 2) + 1e-30)
         return float(numerator / denominator)
 
     def run(self) -> Iterator[Report]:
@@ -250,13 +422,16 @@ class LBMSolver:
 
     def fields(self) -> dict[str, np.ndarray]:
         speed = np.sqrt(self.ux**2 + self.uy**2)
-        return {
+        fields = {
             "rho": self.rho,
             "ux": self.ux,
             "uy": self.uy,
             "speed": speed,
             "solid_mask": self.solid_mask,
         }
+        if self.thermal is not None:
+            fields["temperature"] = self.thermal.temperature
+        return fields
 
     def summary(self) -> dict[str, object]:
         return {
@@ -265,4 +440,3 @@ class LBMSolver:
             "warnings": self.warnings,
             "history": [r.as_dict() for r in self.residual_history],
         }
-

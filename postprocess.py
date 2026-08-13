@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import csv
 import json
 import os
 import time
+from pathlib import Path
 
 Path("logs/matplotlib").mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(Path("logs") / "matplotlib"))
@@ -44,7 +44,22 @@ def normalized_grid(ny: int, nx: int) -> tuple[np.ndarray, np.ndarray]:
 def write_history_csv(path: str | Path, history: list[Report]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames = ["iteration", "residual", "q", "q_avg", "mass_drift", "max_velocity", "tau", "omega", "Ma", "status"]
+    fieldnames = [
+        "iteration",
+        "residual",
+        "q",
+        "q_avg",
+        "mass_drift",
+        "max_velocity",
+        "tau",
+        "omega",
+        "Ma",
+        "status",
+        "temperature_residual",
+        "temperature_min",
+        "temperature_max",
+        "nusselt_average",
+    ]
     with target.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
         writer.writeheader()
@@ -52,7 +67,15 @@ def write_history_csv(path: str | Path, history: list[Report]) -> None:
             writer.writerow(report.as_dict())
 
 
-def save_figures(output_dir: str | Path, rho: np.ndarray, ux: np.ndarray, uy: np.ndarray, solid_mask: np.ndarray, history: list[Report]) -> None:
+def save_figures(
+    output_dir: str | Path,
+    rho: np.ndarray,
+    ux: np.ndarray,
+    uy: np.ndarray,
+    solid_mask: np.ndarray,
+    history: list[Report],
+    temperature: np.ndarray | None = None,
+) -> None:
     out = Path(output_dir) / "figures"
     out.mkdir(parents=True, exist_ok=True)
     spd = speed(ux, uy)
@@ -67,6 +90,14 @@ def save_figures(output_dir: str | Path, rho: np.ndarray, ux: np.ndarray, uy: np
     plt.tight_layout()
     plt.savefig(out / "velocity_magnitude.png", dpi=180)
     plt.close()
+
+    if temperature is not None:
+        plt.figure(figsize=(7, 5))
+        plt.imshow(np.ma.masked_where(solid_mask, temperature), origin="lower", cmap="inferno")
+        plt.colorbar(label="temperature")
+        plt.tight_layout()
+        plt.savefig(out / "temperature.png", dpi=180)
+        plt.close()
 
     plt.figure(figsize=(7, 5))
     plt.imshow(masked_vort, origin="lower", cmap="coolwarm")
@@ -118,16 +149,26 @@ def save_results(solver: LBMSolver, cfg: SolverConfig, output_root: str | Path |
     if cfg.output.save_csv:
         write_history_csv(run_dir / "residual_history.csv", solver.residual_history)
     if cfg.output.save_npz:
-        np.savez_compressed(
-            run_dir / "results.npz",
-            rho=fields["rho"],
-            ux=fields["ux"],
-            uy=fields["uy"],
-            vorticity=vort,
-            speed=fields["speed"],
-            solid_mask=fields["solid_mask"],
-            config=json.dumps(cfg.to_dict()),
-        )
+        archive = {
+            "rho": fields["rho"],
+            "ux": fields["ux"],
+            "uy": fields["uy"],
+            "vorticity": vort,
+            "speed": fields["speed"],
+            "solid_mask": fields["solid_mask"],
+            "config": json.dumps(cfg.to_dict()),
+        }
+        if "temperature" in fields:
+            archive["temperature"] = fields["temperature"]
+        np.savez_compressed(run_dir / "results.npz", **archive)
     if cfg.output.save_png:
-        save_figures(run_dir, fields["rho"], fields["ux"], fields["uy"], fields["solid_mask"], solver.residual_history)
+        save_figures(
+            run_dir,
+            fields["rho"],
+            fields["ux"],
+            fields["uy"],
+            fields["solid_mask"],
+            solver.residual_history,
+            fields.get("temperature"),
+        )
     return run_dir

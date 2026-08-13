@@ -35,6 +35,13 @@ INCOMING = {
     "top": np.array([4, 7, 8]),
 }
 
+SPECULAR_SOURCE = {
+    "left": {1: 3, 5: 6, 8: 7},
+    "right": {3: 1, 6: 5, 7: 8},
+    "bottom": {2: 4, 5: 8, 6: 7},
+    "top": {4: 2, 7: 6, 8: 5},
+}
+
 EDGE = {
     "left": (slice(None), 0),
     "right": (slice(None), -1),
@@ -84,8 +91,8 @@ def _edge_arrays(f: np.ndarray, side: str) -> tuple[np.ndarray, tuple]:
 def no_slip_bounce_back(
     f: np.ndarray,
     side: str,
-    bc: "BoundaryConfig",
-    cfg: "SolverConfig",
+    bc: BoundaryConfig,
+    cfg: SolverConfig,
     ramp: float,
 ) -> None:
     edge, selector = _edge_arrays(f, side)
@@ -98,8 +105,8 @@ def no_slip_bounce_back(
 def moving_wall_bounce_back(
     f: np.ndarray,
     side: str,
-    bc: "BoundaryConfig",
-    cfg: "SolverConfig",
+    bc: BoundaryConfig,
+    cfg: SolverConfig,
     ramp: float,
 ) -> None:
     edge, selector = _edge_arrays(f, side)
@@ -113,11 +120,41 @@ def moving_wall_bounce_back(
     f[selector] = edge
 
 
+def specular_reflection(
+    f: np.ndarray,
+    side: str,
+    bc: BoundaryConfig,
+    cfg: SolverConfig,
+    ramp: float,
+) -> None:
+    edge, selector = _edge_arrays(f, side)
+    source = edge.copy()
+    for incoming, reflected in SPECULAR_SOURCE[side].items():
+        edge[..., incoming] = source[..., reflected]
+    f[selector] = edge
+
+
+def mixed_bounce_specular(
+    f: np.ndarray,
+    side: str,
+    bc: BoundaryConfig,
+    cfg: SolverConfig,
+    ramp: float,
+) -> None:
+    edge, selector = _edge_arrays(f, side)
+    source = edge.copy()
+    for incoming, specular in SPECULAR_SOURCE[side].items():
+        bounced = source[..., OPP[incoming]]
+        mirrored = source[..., specular]
+        edge[..., incoming] = bc.rb * bounced + (1.0 - bc.rb) * mirrored
+    f[selector] = edge
+
+
 def non_equilibrium_extrapolation(
     f: np.ndarray,
     side: str,
-    bc: "BoundaryConfig",
-    cfg: "SolverConfig",
+    bc: BoundaryConfig,
+    cfg: SolverConfig,
     ramp: float,
 ) -> None:
     selector = EDGE[side]
@@ -139,8 +176,8 @@ def non_equilibrium_extrapolation(
 def full_developed_outlet(
     f: np.ndarray,
     side: str,
-    bc: "BoundaryConfig",
-    cfg: "SolverConfig",
+    bc: BoundaryConfig,
+    cfg: SolverConfig,
     ramp: float,
 ) -> None:
     selector = EDGE[side]
@@ -154,23 +191,25 @@ def full_developed_outlet(
 def periodic(
     f: np.ndarray,
     side: str,
-    bc: "BoundaryConfig",
-    cfg: "SolverConfig",
+    bc: BoundaryConfig,
+    cfg: SolverConfig,
     ramp: float,
 ) -> None:
     """Periodic transport is handled by the streaming step."""
 
 
-BOUNDARY_REGISTRY: dict[str, Callable[[np.ndarray, str, "BoundaryConfig", "SolverConfig", float], None]] = {
+BOUNDARY_REGISTRY: dict[str, Callable[[np.ndarray, str, BoundaryConfig, SolverConfig, float], None]] = {
     "periodic": periodic,
     "no_slip_bounce_back": no_slip_bounce_back,
     "moving_wall_bounce_back": moving_wall_bounce_back,
+    "specular_reflection": specular_reflection,
+    "mixed_bounce_specular": mixed_bounce_specular,
     "non_equilibrium_extrapolation": non_equilibrium_extrapolation,
     "full_developed_outlet": full_developed_outlet,
 }
 
 
-def apply_boundaries(f: np.ndarray, cfg: "SolverConfig", ramp: float) -> None:
+def apply_boundaries(f: np.ndarray, cfg: SolverConfig, ramp: float) -> None:
     for side in ("left", "right", "bottom", "top"):
         bc = getattr(cfg, side)
         BOUNDARY_REGISTRY[bc.type](f, side, bc, cfg, ramp)

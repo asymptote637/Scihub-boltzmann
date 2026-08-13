@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import tempfile
 import zipfile
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -12,6 +12,11 @@ import streamlit as st
 
 from config import (
     CORE_BOUNDARY_TYPES,
+    SUPPORTED_CASE_TYPES,
+    SUPPORTED_COLLISION_MODELS,
+    SUPPORTED_MRT_PRESETS,
+    SUPPORTED_PARAMETER_MODES,
+    SUPPORTED_RAMP_PROFILES,
     BoundaryConfig,
     ObstacleConfig,
     OutputConfig,
@@ -23,7 +28,6 @@ from config import (
 )
 from lbm_solver import LBMSolver
 from postprocess import save_results, speed, vorticity
-
 
 st.set_page_config(page_title="2D LBM Simulator", layout="wide")
 
@@ -58,15 +62,32 @@ def make_zip(path: Path) -> bytes:
     return data
 
 
-st.title("2D D2Q9-BGK LBM Simulator")
+st.title("2D D2Q9 LBM Simulator")
 
 with st.sidebar:
     st.header("Model")
     case_type = st.selectbox(
         "case_type",
-        ["lid_driven_cavity", "poiseuille_channel", "couette_flow", "periodic_channel", "cylinder_flow", "custom"],
+        SUPPORTED_CASE_TYPES,
     )
-    collision_model = st.selectbox("collision_model", ["BGK"])
+    collision_model = st.selectbox("collision_model", SUPPORTED_COLLISION_MODELS)
+    trt_magic_parameter = 3.0 / 16.0
+    mrt_preset = "lallemand_luo"
+    mrt_s_e = 1.64
+    mrt_s_epsilon = 1.54
+    mrt_s_q = 1.90
+    if collision_model == "TRT":
+        trt_magic_parameter = st.number_input(
+            "TRT Lambda", min_value=0.001, max_value=1.0, value=3.0 / 16.0, format="%.6f"
+        )
+    elif collision_model == "MRT":
+        mrt_preset = st.selectbox("MRT preset", SUPPORTED_MRT_PRESETS)
+        if mrt_preset == "custom":
+            mrt_s_e = st.number_input("MRT s_e", min_value=0.001, max_value=1.999, value=1.64)
+            mrt_s_epsilon = st.number_input(
+                "MRT s_epsilon", min_value=0.001, max_value=1.999, value=1.54
+            )
+            mrt_s_q = st.number_input("MRT s_q", min_value=0.001, max_value=1.999, value=1.90)
     boundary_scheme_default = st.selectbox(
         "boundary_scheme_default",
         ["non_equilibrium_extrapolation", "no_slip_bounce_back", "moving_wall_bounce_back"],
@@ -78,35 +99,74 @@ with st.sidebar:
 
     st.header("Flow")
     rho0 = st.number_input("rho0", min_value=0.01, value=1.0, step=0.01)
-    reynolds = st.number_input("Re", min_value=1.0, value=1000.0, step=50.0)
+    parameter_mode = st.selectbox("parameter_mode", SUPPORTED_PARAMETER_MODES)
+    reynolds = 1000.0
+    direct_tau = 0.6
+    length_phys = 1.0
+    velocity_phys = 1.0
+    nu_phys = 1e-6
+    if parameter_mode == "reynolds":
+        reynolds = st.number_input("Re", min_value=1.0, value=1000.0, step=50.0)
+    elif parameter_mode in {"tau", "rayleigh"}:
+        direct_tau = st.number_input("tau", min_value=0.500001, value=0.6, format="%.6f")
+    else:
+        length_phys = st.number_input("L_phys", min_value=1e-12, value=1.0)
+        velocity_phys = st.number_input("U_phys", min_value=1e-12, value=1.0)
+        nu_phys = st.number_input("nu_phys", min_value=1e-15, value=1e-6, format="%.12g")
     u_ref = st.number_input("U_ref", min_value=0.0, value=0.05, step=0.005, format="%.5f")
     l_ref = st.number_input("L_ref, 0 = auto", min_value=0.0, value=0.0, step=1.0)
 
-    with st.expander("Auto recommend parameters"):
-        desired_ma = st.number_input("desired_Ma_max", min_value=0.01, max_value=0.3, value=0.1)
-        tau_target = st.number_input("desired_tau_target", min_value=0.55, max_value=1.2, value=0.6)
-        rec = recommend_u_ref(
-            reynolds=reynolds,
-            nx=int(nx),
-            ny=int(ny),
-            case_type=case_type,
-            desired_ma_max=desired_ma,
-            desired_tau_target=tau_target,
-        )
-        st.write(rec)
+    if parameter_mode == "reynolds":
+        with st.expander("Auto recommend parameters"):
+            desired_ma = st.number_input(
+                "desired_Ma_max", min_value=0.01, max_value=0.3, value=0.1
+            )
+            desired_tau_target = st.number_input(
+                "desired_tau_target", min_value=0.55, max_value=1.2, value=0.6
+            )
+            rec = recommend_u_ref(
+                reynolds=reynolds,
+                nx=int(nx),
+                ny=int(ny),
+                case_type=case_type,
+                desired_ma_max=desired_ma,
+                desired_tau_target=desired_tau_target,
+            )
+            st.write(rec)
 
     st.header("Convergence")
     tol = st.number_input("tol", min_value=1e-12, value=1e-6, format="%.1e")
     max_iter = st.number_input("max_iter", min_value=1, value=5000, step=1000)
     min_iter = st.number_input("min_iter", min_value=0, value=500, step=100)
     report_interval = st.number_input("report_interval", min_value=1, value=100, step=50)
-    ramp_steps = st.number_input("ramp_steps", min_value=1, value=1000, step=100)
+    with st.expander("Numerics"):
+        body_force_x = st.number_input(
+            "body_force_x",
+            value=1e-7
+            if case_type in {"periodic_channel", "open_channel_flow", "heated_channel_flow"}
+            else 0.0,
+            format="%.10f",
+        )
+        body_force_y = st.number_input("body_force_y", value=0.0, format="%.10f")
+        ramp_profile = st.selectbox("ramp_profile", SUPPORTED_RAMP_PROFILES, index=1)
+        ramp_steps = st.number_input("ramp_steps", min_value=1, value=1000, step=100)
+        mass_drift_warning = st.number_input("mass_drift_warning", value=1e-4, format="%.1e")
+        mass_drift_limit = st.number_input("mass_drift_limit", value=1e-3, format="%.1e")
+        residual_limit = st.number_input("residual_limit", value=1e3, format="%.3g")
+        max_velocity_limit = st.number_input("max_velocity_limit", value=0.3, format="%.4f")
 
-preset = case_preset(case_type, nx=int(nx), ny=int(ny))
-preset.u_ref = float(u_ref)
+preset = case_preset(case_type, nx=int(nx), ny=int(ny), u_ref=float(u_ref))
 preset.reynolds = float(reynolds)
-if case_type == "lid_driven_cavity":
-    preset.top.ux = float(u_ref)
+thermal_enabled = preset.thermal_enabled
+thermal_buoyancy = preset.thermal_buoyancy
+prandtl = preset.prandtl
+rayleigh = preset.rayleigh
+temperature_hot = preset.temperature_hot
+temperature_cold = preset.temperature_cold
+temperature_initial = preset.temperature_initial
+temperature_reference = preset.temperature_reference
+gravity_x = preset.gravity_x
+gravity_y = preset.gravity_y
 
 tab_setup, tab_run, tab_results = st.tabs(["Setup", "Run", "Results"])
 
@@ -130,6 +190,19 @@ with tab_setup:
             width=oc1.slider("rectangle width", 0.02, 0.60, preset.obstacle.width, 0.01),
             height=oc2.slider("rectangle height", 0.02, 0.60, preset.obstacle.height, 0.01),
         )
+        if thermal_enabled:
+            st.subheader("Thermal")
+            thermal_buoyancy = st.checkbox("Boussinesq buoyancy", thermal_buoyancy)
+            prandtl = st.number_input("Pr", min_value=1e-6, value=float(prandtl))
+            rayleigh = st.number_input("Ra", min_value=0.0, value=float(rayleigh))
+            temperature_hot = st.number_input("T_hot", value=float(temperature_hot))
+            temperature_cold = st.number_input("T_cold", value=float(temperature_cold))
+            temperature_initial = st.number_input("T_initial", value=float(temperature_initial))
+            temperature_reference = st.number_input(
+                "T_reference", value=float(temperature_reference)
+            )
+            gravity_x = st.number_input("gravity_x", value=float(gravity_x))
+            gravity_y = st.number_input("gravity_y", value=float(gravity_y))
         st.subheader("Output")
         save_npz = st.checkbox("save_npz", True)
         save_csv = st.checkbox("save_csv", True)
@@ -137,25 +210,64 @@ with tab_setup:
         save_animation = st.checkbox("save_animation", False, disabled=True)
         output_dir = st.text_input("output_dir", "results/ui_runs")
 
+if case_type == "natural_convection_cavity":
+    preset.thermal_left.temperature = float(temperature_hot)
+    preset.thermal_right.temperature = float(temperature_cold)
+elif case_type in {"rayleigh_benard_convection", "heated_channel_flow"}:
+    preset.thermal_bottom.temperature = float(temperature_hot)
+    preset.thermal_top.temperature = float(temperature_cold)
+
 cfg = SolverConfig(
     case_type=case_type,
     collision_model=collision_model,
+    trt_magic_parameter=float(trt_magic_parameter),
+    mrt_preset=mrt_preset,
+    mrt_s_e=float(mrt_s_e),
+    mrt_s_epsilon=float(mrt_s_epsilon),
+    mrt_s_q=float(mrt_s_q),
     boundary_scheme_default=boundary_scheme_default,
+    parameter_mode=parameter_mode,
     nx=int(nx),
     ny=int(ny),
     rho0=float(rho0),
     u_ref=float(u_ref),
     reynolds=float(reynolds),
+    tau_target=float(direct_tau),
+    length_phys=float(length_phys),
+    velocity_phys=float(velocity_phys),
+    nu_phys=float(nu_phys),
     l_ref=None if l_ref <= 0 else float(l_ref),
+    thermal_enabled=thermal_enabled,
+    thermal_model=preset.thermal_model,
+    thermal_buoyancy=thermal_buoyancy,
+    prandtl=float(prandtl),
+    rayleigh=float(rayleigh),
+    temperature_hot=float(temperature_hot),
+    temperature_cold=float(temperature_cold),
+    temperature_initial=float(temperature_initial),
+    temperature_reference=float(temperature_reference),
+    gravity_x=float(gravity_x),
+    gravity_y=float(gravity_y),
     tol=float(tol),
     max_iter=int(max_iter),
     min_iter=int(min_iter),
     report_interval=int(report_interval),
     ramp_steps=int(ramp_steps),
+    ramp_profile=ramp_profile,
+    body_force_x=float(body_force_x),
+    body_force_y=float(body_force_y),
+    mass_drift_warning=float(mass_drift_warning),
+    mass_drift_limit=float(mass_drift_limit),
+    residual_limit=float(residual_limit),
+    max_velocity_limit=float(max_velocity_limit),
     left=left,
     right=right,
     bottom=bottom,
     top=top,
+    thermal_left=preset.thermal_left,
+    thermal_right=preset.thermal_right,
+    thermal_bottom=preset.thermal_bottom,
+    thermal_top=preset.thermal_top,
     obstacle=obs,
     output=OutputConfig(
         output_dir=output_dir,
@@ -194,6 +306,7 @@ with tab_run:
 
     metrics_box = st.empty()
     plot_col1, plot_col2 = st.columns(2)
+    temperature_plot = st.empty()
     history_plot = st.empty()
     status_box = st.empty()
 
@@ -210,6 +323,8 @@ with tab_run:
             vort = vorticity(fields["ux"], fields["uy"])
             plot_col1.image(spd / max(float(np.max(spd)), 1e-30), caption="velocity magnitude")
             plot_col2.image(vort, caption="vorticity", clamp=True)
+            if "temperature" in fields:
+                temperature_plot.image(fields["temperature"], caption="temperature")
             if len(solver.residual_history) > 1:
                 hist = pd.DataFrame([r.as_dict() for r in solver.residual_history])
                 history_plot.line_chart(hist.set_index("iteration")[["residual", "mass_drift"]])
@@ -231,10 +346,16 @@ with tab_results:
             figs = run_dir / "figures"
             if figs.exists():
                 cols = st.columns(3)
-                for col, name in zip(cols, ["velocity_magnitude.png", "streamlines.png", "vorticity.png"]):
+                for col, name in zip(
+                    cols,
+                    ["velocity_magnitude.png", "streamlines.png", "vorticity.png"],
+                    strict=True,
+                ):
                     path = figs / name
                     if path.exists():
                         col.image(str(path), caption=name)
+                temperature_path = figs / "temperature.png"
+                if temperature_path.exists():
+                    st.image(str(temperature_path), caption="temperature.png")
     else:
         st.info("No completed UI run yet.")
-

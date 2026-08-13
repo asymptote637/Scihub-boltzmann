@@ -57,7 +57,8 @@ python -m lbm_lab.runner --config configs\lid_driven_cavity.toml
 根据实际需求，项目根目录新增了完整第一版程序：
 
 - `main.py`: 命令行运行入口。
-- `lbm_solver.py`: D2Q9-BGK 核心求解器，数组形状为 `(NY, NX, 9)`。
+- `lbm_solver.py`: D2Q9 流场求解器，支持 BGK、TRT 和 MRT，数组形状为 `(NY, NX, 9)`。
+- `thermal_lbm.py`: D2Q5 温度场求解器，通过双分布函数与流场耦合。
 - `boundary_conditions.py`: 边界条件注册系统，第一版实现 `periodic`、`no_slip_bounce_back`、`moving_wall_bounce_back`、`non_equilibrium_extrapolation`、`full_developed_outlet`。
 - `postprocess.py`: 涡量、速度、流线、矢量图、残差图和结果保存。
 - `desktop_app.py`: PySide6 桌面端 UI，不使用浏览器端口。
@@ -70,6 +71,41 @@ python -m lbm_lab.runner --config configs\lid_driven_cavity.toml
 $env:PYTHONPATH="."
 python main.py --case lid_driven_cavity --nx 64 --ny 64 --re 100 --u-ref 0.05 --max-iter 500 --min-iter 100
 ```
+
+碰撞模型可通过桌面端下拉框选择，命令行中可使用：
+
+```powershell
+python main.py --collision-model TRT --trt-lambda 0.1875
+python main.py --collision-model MRT --mrt-s-e 1.64 --mrt-s-epsilon 1.54 --mrt-s-q 1.90
+```
+
+- `BGK`: 单松弛时间，参数最少，适合基准对照和较温和工况。
+- `TRT`: 对称/反对称分量分别松弛，默认 `Lambda = 3/16`。
+- `MRT`: 在 D2Q9 矩空间松弛，剪切模由黏性决定，其他非守恒矩可单独调节。
+
+桌面端还提供以下科研参数：
+
+- `parameter_mode`: 支持 `Re -> tau`、直接 `tau`、物理单位换算和 `Ra / Pr` 热对流四种模式。
+- `MRT preset`: `Lallemand-Luo`、`BGK-equivalent` 和 `Custom`。
+- `body_force_x/y`: Guo forcing 二维体力，周期通道默认带入 x 方向小体力。
+- `ramp_profile`: `linear`、`smoothstep`、`exponential` 或 `instant`。
+- `mass_drift_warning/limit`、`residual_limit`、`max_velocity_limit`: 运行过程警告与自动停止阈值。
+- `specular_reflection` 和 `mixed_bounce_specular`: 滑移及混合反射边界；后者的 `rb=1` 为纯反弹，`rb=0` 为纯镜面反射。
+
+### 内置算例
+
+- 方腔：`lid_driven_cavity`、`double_lid_cavity`。
+- 通道：`poiseuille_channel`、`couette_flow`、`periodic_channel`、`open_channel_flow`、`heated_channel_flow`。
+- 障碍物：`cylinder_flow`、`square_cylinder_flow`、`backward_facing_step`。
+- 数值验证：`taylor_green_vortex`、`shear_wave_decay`。
+- 热流：`natural_convection_cavity`、`rayleigh_benard_convection`、`heated_channel_flow`。
+- 自定义：`custom`。
+
+### 热流模型
+
+当选择热流算例时，桌面端会开启 `Thermal` 与 `Thermal BCs` 标签页。可设置 `Pr`、`Ra`、冷热温度、参考温度、重力方向及四边的恒温/绝热/周期/出口热边界。结果额外保存 `temperature`、温度残差、平均 Nusselt 数和 `temperature.png`。
+
+当前热流实现适用于低马赫数、Boussinesq 近似下的小温差对流；不代表可压缩燃烧或强变物性热流。
 
 启动桌面端 UI：
 

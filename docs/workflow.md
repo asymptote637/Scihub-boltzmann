@@ -18,7 +18,7 @@ This document describes the recommended research workflow for configuring, runni
 
 ## Daily Simulation Workflow
 
-1. Start from a known case preset: `lid_driven_cavity`, `poiseuille_channel`, `couette_flow`, `periodic_channel`, `cylinder_flow`, or `custom`.
+1. Start from a known hydrodynamic, validation, obstacle, or thermal case preset in the desktop `case_type` list.
 2. Choose grid size, Reynolds number, reference velocity, and boundary conditions.
 3. Check derived values before running:
 
@@ -27,9 +27,10 @@ This document describes the recommended research workflow for configuring, runni
    - `tau`
    - `omega`
    - stability level
+   - for thermal runs: `Pr`, `Ra`, `alpha_lattice`, and `tau_thermal`
 
 4. Run a short smoke simulation before a long one.
-5. Review residual, convergence factor `q`, rolling `q_avg`, mass drift, and maximum velocity.
+5. Review residual, convergence factor `q`, rolling `q_avg`, mass drift, and maximum velocity. Thermal runs also report temperature residual, temperature range, and average Nusselt number.
 6. Save long-run configs and summaries, but keep generated result fields local unless they are intentionally curated for publication.
 
 ## Desktop UI Workflow
