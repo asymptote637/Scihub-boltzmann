@@ -33,6 +33,8 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QScrollArea,
+    QSizePolicy,
     QSpinBox,
     QSplitter,
     QTabWidget,
@@ -111,9 +113,17 @@ class BoundaryPanel(QGroupBox):
         super().__init__(f"{side} boundary")
         self.side = side
         layout = QFormLayout(self)
+        layout.setContentsMargins(12, 18, 12, 12)
+        layout.setHorizontalSpacing(10)
+        layout.setVerticalSpacing(8)
+        layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
+        self.setMinimumHeight(185)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.type_box = QComboBox()
         self.type_box.addItems(sorted(CORE_BOUNDARY_TYPES))
         self.type_box.setCurrentText(default.type if default.type in CORE_BOUNDARY_TYPES else "no_slip_bounce_back")
+        self.type_box.setMinimumHeight(28)
+        self.type_box.setMinimumWidth(245)
         self.ux = self._double(default.ux, -1.0, 1.0, 0.005, 6)
         self.uy = self._double(default.uy, -1.0, 1.0, 0.005, 6)
         self.rho = self._double(default.rho, 0.0001, 10.0, 0.01, 6)
@@ -131,6 +141,8 @@ class BoundaryPanel(QGroupBox):
         spin.setSingleStep(step)
         spin.setDecimals(decimals)
         spin.setValue(value)
+        spin.setMinimumHeight(28)
+        spin.setMinimumWidth(245)
         return spin
 
     def value(self) -> BoundaryConfig:
@@ -170,7 +182,10 @@ class DesktopWindow(QMainWindow):
 
     def _build_controls(self) -> QWidget:
         root = QWidget()
+        root.setMinimumWidth(620)
         layout = QVBoxLayout(root)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(10)
 
         model_box = QGroupBox("Model")
         model_form = QFormLayout(model_box)
@@ -218,8 +233,13 @@ class DesktopWindow(QMainWindow):
         layout.addWidget(conv_box)
 
         self.tabs = QTabWidget()
+        self.tabs.setMinimumHeight(455)
         self.boundary_widget = QWidget()
+        self.boundary_widget.setMinimumHeight(400)
         boundary_layout = QGridLayout(self.boundary_widget)
+        boundary_layout.setContentsMargins(12, 12, 12, 12)
+        boundary_layout.setHorizontalSpacing(12)
+        boundary_layout.setVerticalSpacing(14)
         preset = case_preset("lid_driven_cavity", 128, 128)
         self.left_panel = BoundaryPanel("left", preset.left)
         self.right_panel = BoundaryPanel("right", preset.right)
@@ -281,7 +301,12 @@ class DesktopWindow(QMainWindow):
         button_layout.addWidget(self.stop_button, 0, 2)
         layout.addWidget(button_row)
         layout.addStretch(1)
-        return root
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(root)
+        scroll.setMinimumWidth(650)
+        return scroll
 
     def _build_output(self) -> QWidget:
         root = QWidget()
