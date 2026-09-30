@@ -1,5 +1,9 @@
 # LBM Research Workspace
 
+2026-09-30 源码快照已包含 CPU/GPU 统一工作台。上传范围、下载运行方式及本地资料限制见 [GitHub 快照说明](docs/development/github_snapshot_20260930.md)。
+
+目录导航：请先看 [文件夹导航](文件夹导航.md)，其中列出了学习、运行、实验数据与资料站的入口。
+
 这个文件夹已经整理成一个格子 Boltzmann 方程仿真工作台。当前版本提供：
 
 - `src/lbm_lab`: 可复用 Python 包，包含 D2Q9/BGK 基础算子、示例仿真、数据库记录和命令行入口。
@@ -164,19 +168,31 @@ python -m pip install -r requirements.txt
 4. 在 `database/lbm_runs.sqlite` 中查看运行记录。
 5. 在 `results/<run_id>/` 中做后处理和出图。
 
-更详细的目录和数据库说明见 `docs/workflow.md`。
+如果目标是从理论、基准验证逐步进入科研仿真，请从
+[`docs/training/lbm_research_training.md`](docs/training/lbm_research_training.md) 的分级路线开始。第一关会用周期剪切波直接测量求解器的运动黏度，而不是只凭云图判断程序正确。
+
+第 2 关已经提供 Couette / Poiseuille 从静止启动、解析剖面比较与网格收敛实验：
+
+```powershell
+.\.venv\Scripts\python.exe -m training.channel_validation
+```
+
+详见 [`docs/training/02_channel_validation.md`](docs/training/02_channel_validation.md)。
+每次实验保存新的时间戳结果目录。`couette_flow`、`periodic_channel` 新预设使用半格反弹，全部行是流体点，壁间高度为 `NY`；其他显式旧边界配置仍按原类型运行。
+
+更详细的目录和数据库说明见 `docs/project/workflow.md`。
 
 ## GitHub 发布策略
 
-本仓库适合公开源码、文档、配置模板、测试和启动脚本；本地仿真输出、数据库、日志、缓存、原始数据和个人环境状态应保留在本地。详细规则见 `docs/publication_policy.md`。
+本仓库适合公开源码、文档、配置模板、测试和启动脚本；本地仿真输出、数据库、日志、缓存、原始数据和个人环境状态应保留在本地。详细规则见 `docs/development/publication_policy.md`。
 
 ## Project Docs
 
-- `docs/about.md`: project scope, goals, and limitations.
-- `docs/workflow.md`: simulation and publication workflow.
-- `docs/package.md`: installation, packaging, and build notes.
-- `docs/release.md`: release checklist and tag process.
-- `docs/contribute.md`: contribution guide.
-- `docs/publication_policy.md`: public vs local-only file policy.
+- `docs/project/about.md`: project scope, goals, and limitations.
+- `docs/project/workflow.md`: simulation and publication workflow.
+- `docs/development/package.md`: installation, packaging, and build notes.
+- `docs/development/release.md`: release checklist and tag process.
+- `docs/development/contribute.md`: contribution guide.
+- `docs/development/publication_policy.md`: public vs local-only file policy.
 
 CI is defined in `.github/workflows/ci.yml`.

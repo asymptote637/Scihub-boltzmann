@@ -1,0 +1,58 @@
+{
+  "created_at_local": "20260929_123215",
+  "strategy": "分类快捷入口与静态压缩包；运行工程和数据保持原位",
+  "archives": [
+    {
+      "archive": "01_通用LBM工程_源码快照_不含环境与结果.zip",
+      "scope": "根目录通用 LBM 工程的源码、启动脚本、配置、训练程序及测试。",
+      "file_count": 50,
+      "source_bytes": 208963,
+      "zip_bytes": 72264,
+      "zip_sha256": "83466cee7771da94f7be6be88a630fcf9b63606c7acffa6df161b565d11664de",
+      "crc_and_sha256_verified": true
+    },
+    {
+      "archive": "02_BGK_NEE_CPU_源码快照_非完整迁移包.zip",
+      "scope": "CPU BGK–NEE 工程源码与静态配置；不包含 evidence、validation、历史运行结果及 Python 环境。原 MANIFEST_SHA256.json 仅作来源记录，不适用于本精简快照。",
+      "file_count": 78,
+      "source_bytes": 26718172,
+      "zip_bytes": 15375424,
+      "zip_sha256": "2fe4ba5d44e9ffcc19a1b16997f2ec47d57fdcba496da4e5ea3bf85b563666c3",
+      "crc_and_sha256_verified": true
+    },
+    {
+      "archive": "03_BGK_NEE_GPU_源码快照_不含环境与结果.zip",
+      "scope": "GPU 与统一工作台源码、静态配置及冻结 CPU 参照源码；不包含 workspace、results、validation 及环境。",
+      "file_count": 79,
+      "source_bytes": 489233,
+      "zip_bytes": 184783,
+      "zip_sha256": "6f6cccb48d970447e05d8f639a27ff3a3a068fed1cf969c9408f4ea6666de4b3",
+      "crc_and_sha256_verified": true
+    },
+    {
+      "archive": "04_学习资料与项目说明_含教材总结及核对页.zip",
+      "scope": "项目文档、训练教程、研究参考、交接记录、CPU/GPU 使用说明，以及教材详细总结和 5 张附录核对页。文件内历史结论不代表本次重新验证。",
+      "file_count": 33,
+      "source_bytes": 505343,
+      "zip_bytes": 373919,
+      "zip_sha256": "1354d787361508117ab0700dd0385a8fe3682f24bc241cd8284a2da9382be34c",
+      "crc_and_sha256_verified": true
+    },
+    {
+      "archive": "05_LBM资料站_源码快照_不含生成站点.zip",
+      "scope": "资料站生成脚本和说明；不包含 dist、Git 历史、本地运行状态或托管凭证。",
+      "file_count": 3,
+      "source_bytes": 45800,
+      "zip_bytes": 20819,
+      "zip_sha256": "fb179601f663ba834ef831a77213ae432272757ba620e5d88ca4bbaf1f8bba94",
+      "crc_and_sha256_verified": true
+    }
+  ],
+  "shortcut_count": 35,
+  "original_files_moved": 0,
+  "original_files_deleted": 0,
+  "validation": "每个压缩包通过 ZIP CRC 与逐文件 SHA-256 校验；所收集原文件在打包期间未变化。",
+  "active_gpu_paths_preserved": true,
+  "shortcuts_created_and_targets_verified": 35,
+  "active_gpu_processes_present_after_organization": 6
+}

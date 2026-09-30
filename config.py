@@ -36,6 +36,8 @@ CORE_BOUNDARY_TYPES = {
     "periodic",
     "no_slip_bounce_back",
     "moving_wall_bounce_back",
+    "halfway_bounce_back",
+    "moving_halfway_bounce_back",
     "non_equilibrium_extrapolation",
     "full_developed_outlet",
     "specular_reflection",
@@ -146,6 +148,10 @@ class SolverConfig:
     def characteristic_length(self) -> float:
         if self.l_ref is not None and self.l_ref > 0:
             return float(self.l_ref)
+        if self.halfway_channel_axis == "x":
+            return float(self.ny)
+        if self.halfway_channel_axis == "y":
+            return float(self.nx)
         if self.case_type == "cylinder_flow":
             return max(3.0, 2.0 * self.obstacle.radius * min(self.nx, self.ny))
         if self.case_type == "square_cylinder_flow":
@@ -162,6 +168,22 @@ class SolverConfig:
         }:
             return float(self.ny - 1)
         return float(min(self.nx, self.ny) - 1)
+
+    @property
+    def halfway_channel_axis(self) -> str | None:
+        """Streamwise periodic axis, with the other two walls at half links."""
+        wall_types = {"halfway_bounce_back", "moving_halfway_bounce_back"}
+        if (
+            self.left.type == self.right.type == "periodic"
+            and self.bottom.type in wall_types and self.top.type in wall_types
+        ):
+            return "x"
+        if (
+            self.bottom.type == self.top.type == "periodic"
+            and self.left.type in wall_types and self.right.type in wall_types
+        ):
+            return "y"
+        return None
 
     @property
     def nu_lattice(self) -> float:
@@ -293,13 +315,13 @@ def case_preset(
     elif case_type == "couette_flow":
         cfg.left = BoundaryConfig("periodic")
         cfg.right = BoundaryConfig("periodic")
-        cfg.top = BoundaryConfig("moving_wall_bounce_back", ux=cfg.u_ref, uy=0.0)
-        cfg.bottom = BoundaryConfig("no_slip_bounce_back")
+        cfg.top = BoundaryConfig("moving_halfway_bounce_back", ux=cfg.u_ref, uy=0.0)
+        cfg.bottom = BoundaryConfig("halfway_bounce_back")
     elif case_type == "periodic_channel":
         cfg.left = BoundaryConfig("periodic")
         cfg.right = BoundaryConfig("periodic")
-        cfg.top = BoundaryConfig("no_slip_bounce_back")
-        cfg.bottom = BoundaryConfig("no_slip_bounce_back")
+        cfg.top = BoundaryConfig("halfway_bounce_back")
+        cfg.bottom = BoundaryConfig("halfway_bounce_back")
         cfg.body_force_x = 1e-7
     elif case_type == "open_channel_flow":
         cfg.left = BoundaryConfig("periodic")
@@ -557,6 +579,22 @@ def validate_config(cfg: SolverConfig) -> tuple[list[str], list[str]]:
             errors.append(f"{side} boundary type is unknown: {bc.type}")
         if not 0.0 <= bc.rb <= 1.0:
             errors.append(f"{side} rb must be in [0, 1].")
+        if bc.type in {"moving_wall_bounce_back", "moving_halfway_bounce_back"}:
+            normal_velocity = bc.ux if side in {"left", "right"} else bc.uy
+            if not math.isfinite(bc.ux) or not math.isfinite(bc.uy):
+                errors.append(f"{side} wall velocity must be finite.")
+            elif abs(normal_velocity) > 1e-15:
+                errors.append(f"{side} moving wall requires zero normal velocity.")
+
+    has_halfway = any(
+        getattr(cfg, side).type in {"halfway_bounce_back", "moving_halfway_bounce_back"}
+        for side in ("left", "right", "bottom", "top")
+    )
+    if has_halfway:
+        if cfg.halfway_channel_axis is None:
+            errors.append("Halfway walls currently require two opposite walls and a periodic axis.")
+        if cfg.thermal_enabled or cfg.obstacle.type != "none":
+            errors.append("Halfway outer walls currently support isothermal obstacle-free channels.")
 
     if (cfg.left.type == "periodic") != (cfg.right.type == "periodic"):
         errors.append("left and right must both be periodic or both be non-periodic.")

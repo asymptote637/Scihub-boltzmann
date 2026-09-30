@@ -9,7 +9,15 @@ from pathlib import Path
 
 import numpy as np
 
-from boundary_conditions import OPP, E, W, apply_boundaries, equilibrium, macroscopic
+from boundary_conditions import (
+    OPP,
+    E,
+    W,
+    apply_boundaries,
+    apply_halfway_boundaries,
+    equilibrium,
+    macroscopic,
+)
 from config import SolverConfig, derived_parameters, validate_config
 from thermal_lbm import ThermalField
 
@@ -115,6 +123,13 @@ class LBMSolver:
         self._initialize_case_velocity()
         self.f = equilibrium(self.rho, self.ux, self.uy)
         self.thermal = ThermalField(cfg, self.solid_mask) if cfg.thermal_enabled else None
+        # With Guo forcing, physical momentum is sum(f_i e_i) + F/2.
+        # Initialize that moment consistently with the requested initial u.
+        self.current_ramp = self.ramp_factor()
+        if math.hypot(cfg.body_force_x, cfg.body_force_y) > 0.0 or (
+            cfg.thermal_enabled and cfg.thermal_buoyancy
+        ):
+            self.f -= 0.5 * self._guo_force_source()
         self.mass0 = float(np.sum(self.rho[~self.solid_mask]))
         self.previous_ux = self.ux.copy()
         self.previous_uy = self.uy.copy()
@@ -123,7 +138,6 @@ class LBMSolver:
             self.thermal.temperature.copy() if self.thermal is not None else None
         )
         self.residual_history: list[Report] = []
-        self.current_ramp = 1.0
 
     @property
     def periodic_x(self) -> bool:
@@ -143,7 +157,10 @@ class LBMSolver:
         }:
             self.ux[:, :] = self.cfg.u_ref
         elif self.cfg.case_type == "couette_flow":
-            y = np.linspace(0.0, 1.0, self.cfg.ny)[:, None]
+            if self.cfg.halfway_channel_axis == "x":
+                y = ((np.arange(self.cfg.ny) + 0.5) / self.cfg.ny)[:, None]
+            else:
+                y = np.linspace(0.0, 1.0, self.cfg.ny)[:, None]
             self.ux[:, :] = y * self.cfg.u_ref
         elif self.cfg.case_type in {"periodic_channel", "open_channel_flow"}:
             self.ux[:, :] = min(self.cfg.u_ref, 0.01)
@@ -297,6 +314,7 @@ class LBMSolver:
         self.current_ramp = ramp
         f_post = self.collide()
         self.f = self.stream(f_post)
+        apply_halfway_boundaries(self.f, f_post, self.rho, self.cfg, ramp)
         apply_boundaries(self.f, self.cfg, ramp)
         self.rho, self.ux, self.uy = macroscopic(self.f, self.solid_mask)
         has_force = (

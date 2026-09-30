@@ -1,0 +1,81 @@
+{
+  "date": "2026-09-29",
+  "root": "D:\\BaiduSyncdisk\\我的文件\\Leon\\科研",
+  "moved_documents": [
+    {
+      "old": "docs/about.md",
+      "new": "docs/project/about.md",
+      "sha256_before": "2609079adc2e0de414e53dfe1f520d6721fd415240ca70e2ec9848366279e2a6",
+      "sha256_after": "2609079adc2e0de414e53dfe1f520d6721fd415240ca70e2ec9848366279e2a6"
+    },
+    {
+      "old": "docs/workflow.md",
+      "new": "docs/project/workflow.md",
+      "sha256_before": "30e319ca3bd887151dbff25062b878313987946543fbe578717e18f96fde86d8",
+      "sha256_after": "30e319ca3bd887151dbff25062b878313987946543fbe578717e18f96fde86d8"
+    },
+    {
+      "old": "docs/contribute.md",
+      "new": "docs/development/contribute.md",
+      "sha256_before": "8de6384b8f21b531256fce34ad9e9c46677b20a6c45d4669af40447043ae4b8a",
+      "sha256_after": "20fac0a4cbd018ead9e6e6a7743d35b8667240f8160ae94b2ed4634e6aea7022"
+    },
+    {
+      "old": "docs/package.md",
+      "new": "docs/development/package.md",
+      "sha256_before": "fa8fe81eac9901a9fb58241bed1cc4444e049538d4fe129b60f32682d405c978",
+      "sha256_after": "fa8fe81eac9901a9fb58241bed1cc4444e049538d4fe129b60f32682d405c978"
+    },
+    {
+      "old": "docs/publication_policy.md",
+      "new": "docs/development/publication_policy.md",
+      "sha256_before": "caae77b6c1d5d158bc4cbfc327bc9e001e5b53104b05de9c4a096c2d7f773c0d",
+      "sha256_after": "caae77b6c1d5d158bc4cbfc327bc9e001e5b53104b05de9c4a096c2d7f773c0d"
+    },
+    {
+      "old": "docs/release.md",
+      "new": "docs/development/release.md",
+      "sha256_before": "79d84f7c07b96fb80b2ff58f7f06b76cca8cce41095019dc1582111824c52474",
+      "sha256_after": "a5c20305a543e0d0ecfabbc26b2492ba5a5c538b1439fdd8e420050d51384087"
+    },
+    {
+      "old": "docs/research_references.md",
+      "new": "docs/research/research_references.md",
+      "sha256_before": "823c934ce2ad46bc1d46f6c08f24286a317c23507aa8a06602dcec5ff56cea6e",
+      "sha256_after": "823c934ce2ad46bc1d46f6c08f24286a317c23507aa8a06602dcec5ff56cea6e"
+    },
+    {
+      "old": "docs/lbm_research_training.md",
+      "new": "docs/training/lbm_research_training.md",
+      "sha256_before": "5086c3c951813f03bfed8ae91eb3ebd8b0063171d4a6626941ad7d46d7ed2f15",
+      "sha256_after": "86617761a9065f56c98726abfe85896751c3c8b729594c5ec84f5e598ce77857"
+    },
+    {
+      "old": "docs/LBM_新对话迁移Prompt_20260908.md",
+      "new": "docs/handoffs/LBM_新对话迁移Prompt_20260908.md",
+      "sha256_before": "a3da5c8c45f0d5f83f8cc189c3d98c3d058f7c43d2641a2e9e58542162792650",
+      "sha256_after": "8246d0f9354132f3f168943fd76f847f595afba2dd8419e44f20b129a2edbb71"
+    }
+  ],
+  "updated_documents": [
+    "README.md",
+    "CONTRIBUTING.md",
+    "docs\\development\\contribute.md",
+    "docs\\development\\release.md",
+    "docs\\handoffs\\LBM_新对话迁移Prompt_20260908.md",
+    "docs\\training\\lbm_research_training.md"
+  ],
+  "created_documents": [
+    "文件夹导航.md"
+  ],
+  "validation": {
+    "moved_files_byte_identical_before_link_updates": true,
+    "protected_files_unchanged": 47,
+    "local_links_checked": 13
+  },
+  "notes": [
+    "Only document organization and navigation changed.",
+    "Existing code edits preserved; no simulation or physics validation performed.",
+    "Handoff historical git-status paragraph intentionally retains old paths."
+  ]
+}

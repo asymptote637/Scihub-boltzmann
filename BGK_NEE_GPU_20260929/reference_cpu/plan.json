@@ -1,0 +1,62 @@
+{
+  "grid": 256,
+  "effective_length": 255,
+  "U": 0.04,
+  "tol": 1e-06,
+  "max_iter": 1000000,
+  "min_iter": 2000,
+  "ramp_steps": 500,
+  "report_interval": 200,
+  "mass_tolerance": 1e-09,
+  "mass_criterion": false,
+  "max_mach": 0.1,
+  "resolution_re": 250,
+  "seed_res": [
+    5468,
+    5312
+  ],
+  "min_search_re": 100,
+  "safety_re_cap": 320000,
+  "max_new_runs": 16,
+  "boundary": "non_equilibrium_extrapolation",
+  "corner": "top follows lid, bottom stationary; diagonal interior donor equivalent to Appendix D ordered reconstruction",
+  "residual": "single_step_relative_L2_interior_without_on_node_walls",
+  "mass_policy": "diagnostic_only_no_correction",
+  "user_mass_policy_confirmed": true,
+  "initial_state": "rest",
+  "book_summary": "../evidence/original_nee/book_evidence/格子Boltzmann方法_详细总结_仿真实践增强版.md",
+  "book_pdf": "原始整本PDF未打包；核对页截图见 ../evidence/original_nee/book_evidence/",
+  "book_verified_pages": [
+    218,
+    219,
+    220,
+    221,
+    222
+  ],
+  "reference_halfway_report": "../evidence/halfway_历史报告.md",
+  "created_at": "2026-09-28T10:46:59.632839+08:00",
+  "source_sha256": {
+    "calculation/run_baseline.py": "aaf5b96fcf57d601d3ff4afc01f000a89716bd834bc082fd4fdca28dec8110d4",
+    "calculation/baseline_request.json": "c0fbcd98bd96c5fdb9fbbaebdf582a1b03146758a5703f036d7a96e1f0c6595d",
+    "calculation/source_snapshot/ui_app.py": "0ed2bef79267f0d789e68d9c61bd68ae3a7cc5444c9b602cc3c2a2f4d5f35267",
+    "calculation/source_snapshot/lbm_solver.py": "05915482e3aeca1fc87dcd2bcceff2d638e0c8b9823fb6bb1ca65410afb71b21",
+    "calculation/source_snapshot/config.py": "084e1a1469ed2f7ccfb838b826097dcc81828a400b41d3999c442f332a792e7d",
+    "calculation/source_snapshot/postprocess.py": "529dd626acbcbbe581f31e8ec9d4f98d08821cfc16519a9e023cc00c177ba8e2",
+    "calculation/source_snapshot/desktop_ui.py": "3eb7fa44f2a307109d141af8554b7c61b9f68d0463ba67316b4c0862e23a8f78",
+    "calculation/source_snapshot/main.py": "0e4b29e7fb21815cc6c753daad2ee70369662a50fb47384b6444d3129cec9d82",
+    "calculation/source_snapshot/qt_ui.py": "a258a44774e1789c20f6576bcd0260027db27d2ebc495d4646cbca482b9b4ba2",
+    "calculation/source_snapshot/boundary_conditions.py": "caa93623ad49f49946081320f19985584702de98ab776bdcb4c2049962028c1d",
+    "calculation/source_snapshot/training.py": "93ca4e8e55abeee483ca7ff0f22826dac2449d0cc340992300fdedb922871bee",
+    "calculation/source_snapshot/workbench/worker.py": "7df1d6a2e4f7b65ba67fd48ff9bd8e7a7607abdaf251630655bf8c5203e3529d",
+    "calculation/source_snapshot/workbench/theme.py": "77beabadd3b5a7078bb22bdab4ec47e3d03bd0cb0363cb8e6882efed6ea540cd",
+    "calculation/source_snapshot/workbench/ui.py": "a7014b637a2e1c226e156b1c8902169512395a40f1c1d1c88d974469ff9a1f31",
+    "calculation/source_snapshot/workbench/__init__.py": "289cd4084abc7c705ead587c59a07fd4b9d3238d97d3a6028c97442cdaf35404",
+    "calculation/source_snapshot/workbench/plots.py": "d9c6891c0f6daedcabf64fd75232b7256e07be379a1f722fc6f46365110d50df",
+    "calculation/source_snapshot/workbench/project.py": "78360118b6a87ef34e372b20c423dbc9f7d58c1704e3f3f03c857602532ef89f",
+    "calculation/source_snapshot/workbench/validation.py": "7e89271476ac41d96231b292c5fdb7ca09897fdde89183174b507f0718ad1c97"
+  },
+  "origin_book_sha256": {
+    "/Users/zhouhongtao/Downloads/格子Boltzmann方法_详细总结_仿真实践增强版.md": "8f4e8821349aa4216e0bc371909dbad09b07177ee7ca2a674208266f52fdbdc4",
+    "/Users/zhouhongtao/Downloads/格子Boltzmann方法的理论及应用_12253434.pdf": "402f765b3dea63caf2cfb69a744cd45902e5b3b57035f739c77f3696db925d82"
+  }
+}

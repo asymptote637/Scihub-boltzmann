@@ -1,0 +1,388 @@
+{
+  "started_at": "2026-09-29T21:23:22.348744+08:00",
+  "backend": "fused",
+  "passed": true,
+  "frozen_sources_verified": 18,
+  "tolerances": {
+    "short_field_atol": 2e-12,
+    "long_field_atol": 5e-11,
+    "residual_atol": 5e-12,
+    "residual_rtol": 5e-08
+  },
+  "source_sha256": {
+    "benchmark_gpu.py": "0a992362bf4ad24ce42e9b7f985e0e729d17c6cb9ff3bac2612f4894182a1b08",
+    "cavity_models.py": "c7d5de04fc95b9ffd6c7fdf3cc77281eb84e8d149806592dfb7305b07cd3af4c",
+    "check_gpu.py": "8fdaf7f1f94b2120a5aebda54352a0a8558c26d3ca35c7692feee8b9473755d0",
+    "gpu_environment.py": "eb48c5c0af1adcb399563d543b27ea87f8570f557fc9f255bb8d60089d4e9598",
+    "gpu_fused.py": "4b06249ced7d9385463f7a80475accc7a532c13d09f5b3dcefe1a7e33debaae8",
+    "gpu_solver.py": "0ef18d2ae50112db38d7444c963ed59e7778f5666cff27e5d72bd013f879fa22",
+    "model_validation.py": "16256db977f8036460358523422ebd1ccc0ab05a62e81b7d707f18303f097dd6",
+    "open_dashboard.py": "1c3ddce3cc2aad04e36cbbafe6707a8c789a77574fe7563797952e165c8859b1",
+    "reference.py": "6be5cf26fc85ea28f80da7b82d077998b2b3ca54e12943926c09384794739d3e",
+    "run_gpu.py": "de28431418cb6a6e61e500306a2a1ef43096106a0385a9ef56f75ace35a89fe5",
+    "validate_gpu.py": "78b8b7e80d114f6b4d64d27987fa46beb0e2308c88a7b5bcdaf4855bdfe007e7",
+    "verify_atlas_layout.py": "79b61a484059675f710a07f95d4fd72c39597477dbb112a87e8f22947a21f36a",
+    "verify_dashboard_delivery.py": "e54e2fcdf15643e42121c7c5d59f6f4d44361a4094cd51543cf877b405fec2cf",
+    "verify_dashboard_ui.py": "27a650d1e33f266456dbc67b45f2b007e84a9929bd61969305899d3bbf8746df",
+    "verify_delivery.py": "70e5d3de8934fa3f56ea76a07b47a6de89156db36b11b9cc781828c0acf81a4d",
+    "verify_streamline_ui.py": "67dd0d31d62399676321673dc1ba22840a621e9d50c3a135b7ae2041acaae11d",
+    "kernels.cu": "20eebd044b785657a9089abd493ca5c275d8bff5ac69a17453b8ea95cc0b8ef4"
+  },
+  "trajectories": [
+    {
+      "grid": [
+        16,
+        16
+      ],
+      "Re": 100,
+      "random_state": false,
+      "checks": [
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 1,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 2,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 12,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 20,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 1.734723475976807e-18,
+          "step": 100,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 8.673617379884035e-19,
+          "step": 300,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 500,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 501,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 1000,
+          "stop_reason": "running"
+        }
+      ],
+      "seconds": 0.5386856999975862
+    },
+    {
+      "grid": [
+        17,
+        19
+      ],
+      "Re": 100,
+      "random_state": true,
+      "checks": [
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 1,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 2,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 12,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 20,
+          "stop_reason": "running"
+        }
+      ],
+      "seconds": 0.0137066999959643
+    },
+    {
+      "grid": [
+        256,
+        256
+      ],
+      "Re": 5468,
+      "random_state": false,
+      "checks": [
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 1,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 2,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 12,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 2.0816681711721685e-17,
+          "step": 20,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 1.734723475976807e-18,
+          "step": 100,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 8.673617379884035e-19,
+          "step": 300,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 4.336808689942018e-19,
+          "step": 500,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 501,
+          "stop_reason": "running"
+        },
+        {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0,
+          "residual": 0.0,
+          "step": 1000,
+          "stop_reason": "running"
+        }
+      ],
+      "seconds": 36.63723619999655
+    }
+  ],
+  "protection_tests": [
+    "nan_pre_step_protection",
+    "density_pre_step_protection",
+    "mach_pre_step_protection",
+    "mach_post_step_protection",
+    "zero_residual_minimum_ramp_consecutive",
+    "strict_mass_blocks",
+    "budget_and_report_schedule",
+    "unsupported_force_rejected"
+  ],
+  "low_re": {
+    "passed": true,
+    "checks": [
+      {
+        "f": 0.0,
+        "rho": 0.0,
+        "ux": 0.0,
+        "uy": 0.0,
+        "residual": 0.0,
+        "step": 1,
+        "stop_reason": "running"
+      },
+      {
+        "f": 0.0,
+        "rho": 0.0,
+        "ux": 0.0,
+        "uy": 0.0,
+        "residual": 0.0,
+        "step": 500,
+        "stop_reason": "running"
+      },
+      {
+        "f": 0.0,
+        "rho": 0.0,
+        "ux": 0.0,
+        "uy": 0.0,
+        "residual": 0.0,
+        "step": 2000,
+        "stop_reason": "running"
+      },
+      {
+        "f": 0.0,
+        "rho": 0.0,
+        "ux": 0.0,
+        "uy": 0.0,
+        "residual": 6.776263578034403e-21,
+        "step": 5000,
+        "stop_reason": "running"
+      },
+      {
+        "f": 0.0,
+        "rho": 0.0,
+        "ux": 0.0,
+        "uy": 0.0,
+        "residual": 0.0,
+        "step": 10000,
+        "stop_reason": "running"
+      },
+      {
+        "f": 0.0,
+        "rho": 0.0,
+        "ux": 0.0,
+        "uy": 0.0,
+        "residual": 2.117582368135751e-22,
+        "step": 15000,
+        "stop_reason": "running"
+      },
+      {
+        "f": 0.0,
+        "rho": 0.0,
+        "ux": 0.0,
+        "uy": 0.0,
+        "residual": 2.117582368135751e-22,
+        "step": 16148,
+        "stop_reason": "converged"
+      }
+    ],
+    "iterations": 16148,
+    "stop_reason": "converged",
+    "cpu_diagnostics": {
+      "iteration": 16148.0,
+      "residual": 9.998477937549365e-07,
+      "q": 0.9294302813562568,
+      "q_avg": 0.9375544487959016,
+      "residual_all_nodes": 8.860866101421651e-07,
+      "mass_drift": 0.003104894017096238,
+      "max_velocity": 0.04000000000000009,
+      "min_density": 0.9933120423931225,
+      "max_density": 1.0037801415381542,
+      "max_mach": 0.06928203230275524,
+      "mass_balance_error": 2.911289991991417e-05,
+      "mean_ux": 0.000516676216483014,
+      "mean_uy": 1.4591390541192804e-05,
+      "max_transverse_velocity": 0.02013125898771697,
+      "report_steps": 148.0,
+      "residual_steps": 1.0
+    },
+    "gpu_diagnostics": {
+      "iteration": 16148.0,
+      "residual": 9.998477937549365e-07,
+      "q": 0.9294302813562568,
+      "q_avg": 0.9375544487959016,
+      "residual_all_nodes": 8.860866101421651e-07,
+      "mass_drift": 0.003104894017096238,
+      "max_velocity": 0.04000000000000009,
+      "min_density": 0.9933120423931225,
+      "max_density": 1.0037801415381542,
+      "max_mach": 0.06928203230275524,
+      "mass_balance_error": 2.911289991991417e-05,
+      "mean_ux": 0.000516676216483014,
+      "mean_uy": 1.4591390541192804e-05,
+      "max_transverse_velocity": 0.02013125898771697,
+      "report_steps": 148.0,
+      "residual_steps": 1.0,
+      "gpu_decision_residual": 9.998477937549363e-07
+    },
+    "cpu_vs_historical": {
+      "rho": 0.0,
+      "ux": 0.0,
+      "uy": 0.0
+    },
+    "seconds": 36.27642220000416
+  },
+  "completed_at": "2026-09-29T21:24:36.650646+08:00"
+}

@@ -1,0 +1,13 @@
+{
+  "u": {
+    "url": "https://gist.githubusercontent.com/ivan-pi/3e9326d18a366ffe6a8e5bfda6353219/raw/ghiau.txt",
+    "retrieved": "2026-09-06",
+    "sha256": "51b65a487eb5b424b4aecdd11ebfa612e3dc646a04217bdd8b14c20cf72f3b54"
+  },
+  "v": {
+    "url": "https://gist.githubusercontent.com/ivan-pi/caa6c6737d36a9140fbcf2ea59c78b3c/raw/ghiav.txt",
+    "retrieved": "2026-09-06",
+    "sha256": "9589dde451862382a4d0c552a05407b0360c35d129140c668b1a5d477fcd14d0"
+  },
+  "note": "Secondary transcription of Ghia et al. (1982), JCP 48, 387–411, Tables I/II. Only Re=100 columns used. Original paper tables not visually rechecked in this update."
+}

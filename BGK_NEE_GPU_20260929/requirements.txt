@@ -1,0 +1,6 @@
+numpy==1.26.4
+matplotlib==3.8.4
+psutil==6.0.0
+cupy-cuda12x==13.6.0
+nvidia-cuda-runtime-cu12==12.9.79
+nvidia-cuda-nvrtc-cu12==12.9.86

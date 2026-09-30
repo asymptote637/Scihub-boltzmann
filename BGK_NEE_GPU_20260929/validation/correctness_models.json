@@ -1,0 +1,204 @@
+{
+  "passed": true,
+  "started_at": "2026-09-29T21:30:07.975344+08:00",
+  "source_sha256": {
+    "cavity_models.py": "c7d5de04fc95b9ffd6c7fdf3cc77281eb84e8d149806592dfb7305b07cd3af4c",
+    "reference.py": "6be5cf26fc85ea28f80da7b82d077998b2b3ca54e12943926c09384794739d3e",
+    "gpu_solver.py": "0ef18d2ae50112db38d7444c963ed59e7778f5666cff27e5d72bd013f879fa22",
+    "gpu_fused.py": "4b06249ced7d9385463f7a80475accc7a532c13d09f5b3dcefe1a7e33debaae8",
+    "kernels.cu": "20eebd044b785657a9089abd493ca5c275d8bff5ac69a17453b8ea95cc0b8ef4",
+    "model_validation.py": "16256db977f8036460358523422ebd1ccc0ab05a62e81b7d707f18303f097dd6"
+  },
+  "frozen_sources_verified": 18,
+  "scope": "BGK/MRT x NEE/HBB, float64 CPU/array/CUDA; low-Re cavity only",
+  "backend_comparisons": [
+    {
+      "collision": "BGK",
+      "boundary": "nee",
+      "grid": 24,
+      "re": 100,
+      "iteration": 7059,
+      "stop_reason": "converged",
+      "max_field_errors": {
+        "cupy-array": {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0
+        },
+        "cuda-fused": {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0
+        }
+      },
+      "mass_drift": 0.010632635149916525
+    },
+    {
+      "collision": "BGK",
+      "boundary": "halfway",
+      "grid": 24,
+      "re": 100,
+      "iteration": 7271,
+      "stop_reason": "converged",
+      "max_field_errors": {
+        "cupy-array": {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0
+        },
+        "cuda-fused": {
+          "f": 0.0,
+          "rho": 0.0,
+          "ux": 0.0,
+          "uy": 0.0
+        }
+      },
+      "mass_drift": 7.630562848248701e-13
+    },
+    {
+      "collision": "MRT",
+      "boundary": "nee",
+      "grid": 24,
+      "re": 100,
+      "iteration": 7037,
+      "stop_reason": "converged",
+      "max_field_errors": {
+        "cupy-array": {
+          "f": 3.885780586188048e-16,
+          "rho": 6.661338147750939e-16,
+          "ux": 3.8337388819087437e-16,
+          "uy": 2.8102520310824275e-16
+        },
+        "cuda-fused": {
+          "f": 3.885780586188048e-16,
+          "rho": 7.771561172376096e-16,
+          "ux": 3.7816971776294395e-16,
+          "uy": 3.0820479631973874e-16
+        }
+      },
+      "mass_drift": 0.009506674435327156
+    },
+    {
+      "collision": "MRT",
+      "boundary": "halfway",
+      "grid": 24,
+      "re": 100,
+      "iteration": 7222,
+      "stop_reason": "converged",
+      "max_field_errors": {
+        "cupy-array": {
+          "f": 4.440892098500626e-16,
+          "rho": 7.771561172376096e-16,
+          "ux": 3.187554387107383e-16,
+          "uy": 3.5084782301630923e-16
+        },
+        "cuda-fused": {
+          "f": 3.885780586188048e-16,
+          "rho": 6.661338147750939e-16,
+          "ux": 3.37403716077489e-16,
+          "uy": 3.4006001140007847e-16
+        }
+      },
+      "mass_drift": 0.0
+    }
+  ],
+  "benchmarks": [
+    {
+      "collision": "BGK",
+      "boundary": "nee",
+      "grid": 64,
+      "re": 100,
+      "iteration": 16148,
+      "stop_reason": "converged",
+      "mass_drift": 0.003104894017096238,
+      "residual": 9.998477937549365e-07,
+      "ghia_interior_errors": {
+        "u": {
+          "points": 15,
+          "max_abs": 0.008304172688702705,
+          "rms": 0.004479481903526766
+        },
+        "v": {
+          "points": 15,
+          "max_abs": 0.00637477731501826,
+          "rms": 0.00427950651926264
+        }
+      },
+      "criterion_max_abs": 0.025
+    },
+    {
+      "collision": "BGK",
+      "boundary": "halfway",
+      "grid": 64,
+      "re": 100,
+      "iteration": 16184,
+      "stop_reason": "converged",
+      "mass_drift": 1.5543122344752192e-12,
+      "residual": 9.998611241631048e-07,
+      "ghia_interior_errors": {
+        "u": {
+          "points": 15,
+          "max_abs": 0.0048478783730300234,
+          "rms": 0.003008497175506161
+        },
+        "v": {
+          "points": 15,
+          "max_abs": 0.0030570484602872733,
+          "rms": 0.0021807743761922413
+        }
+      },
+      "criterion_max_abs": 0.025
+    },
+    {
+      "collision": "MRT",
+      "boundary": "nee",
+      "grid": 64,
+      "re": 100,
+      "iteration": 16142,
+      "stop_reason": "converged",
+      "mass_drift": 0.0029766780450852792,
+      "residual": 9.99172559130508e-07,
+      "ghia_interior_errors": {
+        "u": {
+          "points": 15,
+          "max_abs": 0.008367038724208853,
+          "rms": 0.00445954957317188
+        },
+        "v": {
+          "points": 15,
+          "max_abs": 0.006427069832326576,
+          "rms": 0.004346795365103846
+        }
+      },
+      "criterion_max_abs": 0.025
+    },
+    {
+      "collision": "MRT",
+      "boundary": "halfway",
+      "grid": 64,
+      "re": 100,
+      "iteration": 16182,
+      "stop_reason": "converged",
+      "mass_drift": 0.0,
+      "residual": 9.989621606980314e-07,
+      "ghia_interior_errors": {
+        "u": {
+          "points": 15,
+          "max_abs": 0.00444286115912032,
+          "rms": 0.002902608807331866
+        },
+        "v": {
+          "points": 15,
+          "max_abs": 0.0032374943664437023,
+          "rms": 0.0022556935081390304
+        }
+      },
+      "criterion_max_abs": 0.025
+    }
+  ],
+  "unit_test_exit_code": 0,
+  "seconds": 306.16172409999854
+}

@@ -6,7 +6,7 @@ Contributions should improve numerical correctness, reproducibility, documentati
 
 1. Open or identify an issue describing the change.
 2. Keep the change scoped: one solver feature, one boundary condition, one UI improvement, or one documentation update.
-3. Check `docs/publication_policy.md` before adding data or output files.
+3. Check `docs/development/publication_policy.md` before adding data or output files.
 
 ## Development Setup
 

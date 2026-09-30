@@ -110,14 +110,49 @@ def moving_wall_bounce_back(
     ramp: float,
 ) -> None:
     edge, selector = _edge_arrays(f, side)
-    rho_edge = np.sum(edge, axis=-1)
+    # Missing incoming populations are zero after streaming. Reconstruct
+    # density using impermeability before applying a tangential wall speed.
+    source = edge.copy()
+    incoming = INCOMING[side]
+    source[..., incoming] = source[..., OPP[incoming]]
+    rho_edge = np.sum(source, axis=-1)
     ux_wall = bc.ux * ramp
     uy_wall = bc.uy * ramp
-    incoming = INCOMING[side]
     for i in incoming:
         euw = E[i, 0] * ux_wall + E[i, 1] * uy_wall
-        edge[..., i] = edge[..., OPP[i]] - 6.0 * W[i] * rho_edge * euw
+        # i points INTO the fluid, hence the plus sign.
+        edge[..., i] = source[..., OPP[i]] + 6.0 * W[i] * rho_edge * euw
     f[selector] = edge
+
+
+def apply_halfway_boundaries(
+    streamed: np.ndarray,
+    f_post: np.ndarray,
+    rho: np.ndarray,
+    cfg: SolverConfig,
+    ramp: float,
+) -> None:
+    """Reflect outgoing post-collision populations at the SAME fluid node.
+
+    Endpoints are fluid cell centres; each wall is half a lattice spacing
+    outside the domain. Supported topology is a straight periodic channel.
+    """
+    for side in ("left", "right", "bottom", "top"):
+        bc = getattr(cfg, side)
+        if bc.type not in {"halfway_bounce_back", "moving_halfway_bounce_back"}:
+            continue
+        selector = EDGE[side]
+        wall_ux = bc.ux * ramp if bc.type == "moving_halfway_bounce_back" else 0.0
+        wall_uy = bc.uy * ramp if bc.type == "moving_halfway_bounce_back" else 0.0
+        for i in INCOMING[side]:
+            correction = 6.0 * W[i] * rho[selector] * (E[i, 0] * wall_ux + E[i, 1] * wall_uy)
+            streamed[selector + (i,)] = f_post[selector + (OPP[i],)] + correction
+
+
+def halfway_boundary(
+    f: np.ndarray, side: str, bc: BoundaryConfig, cfg: SolverConfig, ramp: float
+) -> None:
+    """Handled by apply_halfway_boundaries, which also needs f_post."""
 
 
 def specular_reflection(
@@ -202,6 +237,8 @@ BOUNDARY_REGISTRY: dict[str, Callable[[np.ndarray, str, BoundaryConfig, SolverCo
     "periodic": periodic,
     "no_slip_bounce_back": no_slip_bounce_back,
     "moving_wall_bounce_back": moving_wall_bounce_back,
+    "halfway_bounce_back": halfway_boundary,
+    "moving_halfway_bounce_back": halfway_boundary,
     "specular_reflection": specular_reflection,
     "mixed_bounce_specular": mixed_bounce_specular,
     "non_equilibrium_extrapolation": non_equilibrium_extrapolation,

@@ -1,0 +1,25 @@
+{
+  "reference": "https://lbm-research-atlas.leochou8.chatgpt.site/editorial.css",
+  "mapping": {
+    "Atlas Serif": [
+      "Noto Serif SC",
+      "Source Serif 4"
+    ],
+    "Atlas Sans": [
+      "Noto Sans SC",
+      "Source Sans 3"
+    ]
+  },
+  "license": "SIL OFL; bundled license files",
+  "desktop": "App-local static instances, wght=400, remaining axes at defaults; no system font installation",
+  "files": {
+    "NotoSerifSC-Regular.ttf": "a9d3afeefd3778c598a197864826a07a2bf8b00b807d84b04b529e9a5038e4cd",
+    "SourceSans3-Regular.ttf": "af659bd07cd3b7b53c7712f4c77b929869e936522e857898aab0470b207120b2",
+    "NotoSansSC-Regular.ttf": "a0f358e304a15579fe2491b519d5c25c1dbc39dbe7f0eedf5ea86f766579cdd6",
+    "SourceSans3[wght].ttf": "042fe2cc0b933e328410d7acbd0aa6a1873dca5aef81875f4bc214b08825c7b9",
+    "NotoSerifSC[wght].ttf": "050080d9255a86808f2945bffac582b31ef32bc36411ce29563b4961670c66f9",
+    "NotoSansSC[wght].ttf": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+    "SourceSerif4[opsz,wght].ttf": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+    "SourceSerif4-Regular.ttf": "7919d5271550c4b09da7629ead9a10f7e67cda997f66799e79f62687785af123"
+  }
+}

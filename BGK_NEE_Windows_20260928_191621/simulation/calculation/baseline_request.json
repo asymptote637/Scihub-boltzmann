@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "name": "BGK NEE cavity, Appendix D corner convention",
+  "notes": "以用户书籍总结第6.3.2节、附录D及原书218—222页为依据。顶角随盖运动、下角静止；残差排除节点壁面。保留256节点、U=0.04、静止初场、500步启动以比较原半格反弹。用户已选择质量仅诊断，不修正。",
+  "created_at": "2026-09-18T06:25:59+00:00",
+  "config": {
+    "case_type": "lid_driven_cavity",
+    "collision_model": "BGK",
+    "boundary_scheme_default": "non_equilibrium_extrapolation",
+    "grid": {
+      "NX": 64,
+      "NY": 64,
+      "L_ref": null,
+      "obstacle_type": "none",
+      "obstacle_x": 0.33,
+      "obstacle_y": 0.5,
+      "obstacle_radius": 0.08,
+      "obstacle_width": 0.12,
+      "obstacle_height": 0.2
+    },
+    "flow": {
+      "rho0": 1.0,
+      "U_ref": 0.04,
+      "Re": 100,
+      "body_force_x": 0,
+      "physical_mode": false,
+      "L_phys": 1.0,
+      "U_phys": 1.0,
+      "nu_phys": 1e-06,
+      "body_force_y": 0.0,
+      "nu_lattice": null,
+      "initial_velocity": "rest"
+    },
+    "convergence": {
+      "tol": 1e-07,
+      "max_iter": 50000,
+      "min_iter": 2000,
+      "report_interval": 200,
+      "ramp_steps": 500,
+      "consecutive_reports": 3,
+      "steady": true,
+      "mass_tolerance": 1e-09,
+      "max_mach": 0.1,
+      "mass_criterion": false
+    },
+    "output": {
+      "output_dir": "outputs",
+      "save_npz": true,
+      "save_csv": true,
+      "save_png": false,
+      "save_animation": false,
+      "plot_interval": 500
+    },
+    "boundaries": {
+      "left": {
+        "type": "non_equilibrium_extrapolation",
+        "ux": 0.0,
+        "uy": 0.0,
+        "rho": 1.0,
+        "rb": 1.0
+      },
+      "right": {
+        "type": "non_equilibrium_extrapolation",
+        "ux": 0.0,
+        "uy": 0.0,
+        "rho": 1.0,
+        "rb": 1.0
+      },
+      "bottom": {
+        "type": "non_equilibrium_extrapolation",
+        "ux": 0.0,
+        "uy": 0.0,
+        "rho": 1.0,
+        "rb": 1.0
+      },
+      "top": {
+        "type": "non_equilibrium_extrapolation",
+        "ux": 0.04,
+        "uy": 0.0,
+        "rho": 1.0,
+        "rb": 1.0
+      }
+    }
+  }
+}

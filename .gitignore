@@ -55,3 +55,30 @@ notebooks/.ipynb_checkpoints/
 Thumbs.db
 .idea/
 .vscode/
+
+# Local historical archive (includes environments and simulation outputs)
+/99_旧版本与历史文件归档/
+
+# Local navigation, static archives and independent resource website
+/00_分类入口（先看这里）/
+/90_分类打包（源码与资料快照）/
+/lbm-research-site/
+# CPU/GPU generated state and evidence archives
+**/workspace/
+**/results/
+**/validation/
+**/validation_windows/
+**/deliveries/
+**/evidence/
+**/historical_Re100_N64/
+**/dashboard_control/
+**/search_state.json
+**/search.lock
+**/calculation/cavity_*/
+**/calculation/latest_run.json
+!/BGK_NEE_GPU_20260929/validation/
+/BGK_NEE_GPU_20260929/validation/*
+!/BGK_NEE_GPU_20260929/validation/correctness_array.json
+!/BGK_NEE_GPU_20260929/validation/correctness_fused.json
+!/BGK_NEE_GPU_20260929/validation/correctness_models.json
+!/BGK_NEE_GPU_20260929/validation/correctness_research.json

@@ -47,7 +47,7 @@ Before tagging a release:
    - caches and local state
 
 6. Update `README.md` if startup commands or supported cases changed.
-7. Update `docs/about.md` if project scope changed.
+7. Update `docs/project/about.md` if project scope changed.
 8. Update this file if the release process changed.
 
 ## Tagging
